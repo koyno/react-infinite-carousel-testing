@@ -1,65 +1,77 @@
+//it's possible to get these props straight from App.js
+//using cypress-react-unit-test, but it won't work in integration tests
+const breakpoints = [768, 1200, 1600]
+const animationDuration = 500
+
 describe('React Leaf Carousel', () => {
 
   beforeEach(() => {
-    cy.viewport(600, 600) //2 images in viewport
     cy.visit('/')
   })
 
-  //check whether lazy loading works
+
+
+
+  //test will fail if slidesToScroll > slidesToShow (it doesn't make sense anyway)
   it('lazy loading', () => {
-    //check only 2 images are loaded
-    cy.get('[data-testid="img0"]').should('exist').and('have.attr', 'alt', 'image')
-    cy.get('[data-testid="img1"]').should('exist').and('have.attr', 'alt', 'image')
-    cy.get('[data-testid="img2"]').should('not.exist')
+    //store how many images are visible
+    let length = Cypress.$('img:visible').length
+
+    //check the last visible image exist and the next doesn't
+    cy.get('[data-testid="img'+(length-1)+'"]').should('exist')
+    cy.get('[data-testid="img'+(length)+'"]').should('not.exist')
+
+    //check the image is available after becoming visible
     cy.get('[data-testid="infinite-carousel-button-next"]').click()
-    cy.get('[data-testid="img2"]').should('exist').and('have.attr', 'alt', 'image')
+    cy.get('[data-testid="img'+(length)+'"]').should('exist')
   })
 
-  //check whether responsive breakpoints works
-  it('responsive breakpoints', () => {
-    //cy.viewport(600, 600) is already set
-    cy.get('[data-testid="img0"]').should('be.visible')
-    cy.get('[data-testid="img1"]').should('be.visible')
-    cy.get('[data-testid="img2"]').should('not.be.visible')
-    cy.get('[data-testid="img3"]').should('not.be.visible')
-    
-    cy.viewport(1000, 600)
-    cy.get('[data-testid="img0"]').should('be.visible')
-    cy.get('[data-testid="img1"]').should('be.visible')
-    cy.get('[data-testid="img2"]').should('be.visible')
-    cy.get('[data-testid="img3"]').should('not.be.visible')
 
-    cy.viewport(1400, 600)
-    cy.get('[data-testid="img0"]').should('be.visible')
-    cy.get('[data-testid="img1"]').should('be.visible')
-    cy.get('[data-testid="img2"]').should('be.visible')
-    cy.get('[data-testid="img3"]').should('be.visible')
-    cy.get('[data-testid="img4"]').should('not.be.visible')
+  //viewport redraw is slow
+  let pause = 1000
+  breakpoints.forEach((breakpoint) => {
+    it(`breakpoint ${breakpoint}px`, () => {
+      //get images quantity for "breakpoint-1" size
+      cy.viewport(breakpoint-1, 600).wait(pause)
+      cy.get('img:visible').its('length').then((len1) => {
+
+        //and compare with "breakpoint".
+        //naïve assumption that different breakpoints have different number of images
+        cy.viewport(breakpoint, 600).wait(pause)
+        cy.get('img:visible').its('length').should('not.eq', len1)
+      })
+    })
   })
 
-  // check if images really changing
+  //test will fail without cy.wait() if animation is turned on
   it('arrows and dots', () => {
-    cy.get('[data-testid="infinite-carousel-button-next"]').click()
-    cy.get('[data-testid="img0"]').should('not.be.visible')
-    cy.get('[data-testid="img1"]').should('not.be.visible')
-    cy.get('[data-testid="img2"]').should('be.visible')
-    cy.get('[data-testid="img3"]').should('be.visible')
-    cy.get('[data-testid="img4"]').should('not.be.visible')
 
-    cy.get('[data-testid="infinite-carousel-button-previous"]').click()
-    cy.get('[data-testid="img0"]').should('be.visible')
-    cy.get('[data-testid="img1"]').should('be.visible')
-    cy.get('[data-testid="img2"]').should('not.be.visible')
-    cy.get('[data-testid="img3"]').should('not.be.visible')
+    //store how many images are visible 
+    //let length = Cypress.$('img:visible').length
+    cy.get('img:visible').its('length').then((len) => {
+      //check the next image after visible one isn't visible yet
+      cy.get('[data-testid="img'+(len)+'"]').should('not.be.visible')
+
+      cy.get('[data-testid="infinite-carousel-button-next"]').click()
+      cy.get('[data-testid="img'+(len)+'"]').should('be.visible')
+
+      //cy.wait(animationDuration)
+      cy.get('[data-testid="infinite-carousel-button-previous"]').click()
+      cy.get('[data-testid="img'+(len)+'"]').should('not.be.visible')
+    })
+
     
     cy.get('[data-testid="infinite-carousel-dots"]>button').each(($el, index) => {
       cy.wrap($el).click()
-      cy.log(index)
-      let page = index*2 //2 images on a single page
+
+      //compute IDs for images
+      let page = index*length
+
+      //cy.wait(animationDuration)
       cy.get('[data-testid="img'+(page-1)+'"]').should('not.be.visible')
       cy.get('[data-testid="img'+page+'"]').should('be.visible')
-      cy.get('[data-testid="img'+(page+1)+'"]').should('be.visible')
-      cy.get('[data-testid="img'+(page+2)+'"]').should('not.be.visible')
+      cy.get('[data-testid="img'+(page+length-1)+'"]').should('be.visible')
+      cy.get('[data-testid="img'+(page+length)+'"]').should('not.be.visible')
     })
   })
   

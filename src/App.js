@@ -7,7 +7,7 @@ export default function App() {
     swipe
     lazyLoad
     dots
-    //showSides
+    //showSides - library doesn't provide reliable way to differentiate side images from usual images 
     breakpoints={[
       {
         breakpoint: 768,
@@ -23,15 +23,22 @@ export default function App() {
           slidesToShow: 3,
         },
       },
+      {
+        breakpoint: 1600,
+        settings: {
+          slidesToScroll: 4,
+          slidesToShow: 4,
+        },
+      },
     ]}
     animationDuration={0}
-    slidesToScroll={4}
-    slidesToShow={4}
+    slidesToScroll={6}
+    slidesToShow={6}
     >
     
       {[...Array(24)].map((value, index) => (
         <div key={index}>
-          <img data-testid={"img" + index} src={"https://picsum.photos/200?random=" + index} alt="image" />
+          <img data-testid={"img" + index} src={"https://picsum.photos/200?random=" + index} alt="" />
         </div>
       ))}
 
