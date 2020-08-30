@@ -13,15 +13,16 @@ describe('React Leaf Carousel', () => {
   //test will fail if slidesToScroll > slidesToShow (it doesn't make sense anyway)
   it('lazy loading', () => {
     //store how many images are visible
-    let length = Cypress.$('img:visible').length
+    cy.get('img:visible').its('length').then((len) => {
 
-    //check the last visible image exist and the next doesn't
-    cy.get('[data-testid="img'+(length-1)+'"]').should('exist')
-    cy.get('[data-testid="img'+(length)+'"]').should('not.exist')
+      //check the last visible image exist and the next doesn't
+      cy.get('[data-testid="img'+(len-1)+'"]').should('exist')
+      cy.get('[data-testid="img'+(len)+'"]').should('not.exist')
 
-    //check the image is available after becoming visible
-    cy.get('[data-testid="infinite-carousel-button-next"]').click()
-    cy.get('[data-testid="img'+(length)+'"]').should('exist')
+      //check the image is available after becoming visible
+      cy.get('[data-testid="infinite-carousel-button-next"]').click()
+      cy.get('[data-testid="img'+(len)+'"]').should('exist')
+    })
   })
 
 
