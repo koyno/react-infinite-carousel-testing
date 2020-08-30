@@ -10,8 +10,6 @@ describe('React Leaf Carousel', () => {
   })
 
 
-
-
   //test will fail if slidesToScroll > slidesToShow (it doesn't make sense anyway)
   it('lazy loading', () => {
     //store how many images are visible
@@ -47,8 +45,9 @@ describe('React Leaf Carousel', () => {
   it('arrows and dots', () => {
 
     //store how many images are visible 
-    //let length = Cypress.$('img:visible').length
     cy.get('img:visible').its('length').then((len) => {
+
+      //arrows
       //check the next image after visible one isn't visible yet
       cy.get('[data-testid="img'+(len)+'"]').should('not.be.visible')
 
@@ -58,20 +57,20 @@ describe('React Leaf Carousel', () => {
       //cy.wait(animationDuration)
       cy.get('[data-testid="infinite-carousel-button-previous"]').click()
       cy.get('[data-testid="img'+(len)+'"]').should('not.be.visible')
-    })
 
-    
-    cy.get('[data-testid="infinite-carousel-dots"]>button').each(($el, index) => {
-      cy.wrap($el).click()
+      //dots
+      cy.get('[data-testid="infinite-carousel-dots"]>button').each(($el, index) => {
+        cy.wrap($el).click()
 
-      //compute IDs for images
-      let page = index*length
+        //compute IDs for images
+        let page = index*len
 
-      //cy.wait(animationDuration)
-      cy.get('[data-testid="img'+(page-1)+'"]').should('not.be.visible')
-      cy.get('[data-testid="img'+page+'"]').should('be.visible')
-      cy.get('[data-testid="img'+(page+length-1)+'"]').should('be.visible')
-      cy.get('[data-testid="img'+(page+length)+'"]').should('not.be.visible')
+        //cy.wait(animationDuration)
+        cy.get('[data-testid="img'+(page-1)+'"]').should('not.be.visible')
+        cy.get('[data-testid="img'+page+'"]').should('be.visible')
+        cy.get('[data-testid="img'+(page+len-1)+'"]').should('be.visible')
+        cy.get('[data-testid="img'+(page+len)+'"]').should('not.be.visible')
+      })
     })
   })
   
